@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Öğretmenim - Ücretsiz Soru Çözümü</title>
+    <!-- Tasarım ve İkon Kütüphaneleri -->
+    <script src="https://jsdelivr.net"></script>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    
+    <!-- Ücretsiz, Sınırsız ve Şifresiz Yapay Zeka Altyapısı (Puter.js) -->
+    <script src="https://puter.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-between antialiased">
+
+    <!-- Üst Menü -->
+    <header class="w-full max-w-md bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-xs">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 text-white p-2 rounded-xl">
+                <i class="fa-solid fa-graduation-cap text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-bold text-slate-800">AI Öğretmenim</h1>
+                <p class="text-xs text-green-500 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse"></span> Kesintisiz Ücretsiz Mod
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana Ekran -->
+    <main class="w-full max-w-md flex-1 p-6 flex flex-col justify-center items-center gap-6">
+        <div id="displayCard" class="w-full bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col items-center justify-center min-h-[320px] relative overflow-hidden">
+            
+            <!-- Başlangıç Görünümü -->
+            <div id="placeholderText" class="text-center p-6">
+                <i class="fa-solid fa-camera text-5xl text-slate-300 mb-4 block"></i>
+                <p class="text-sm font-semibold text-slate-600">Sorunun fotoğrafını çekin veya yükleyin</p>
+                <p class="text-xs text-slate-400 mt-1">Öğretmeniniz saniyeler içinde çözecektir</p>
+            </div>
+            
+            <!-- Soru Önizleme resmi -->
+            <img id="imagePreview" class="hidden w-full max-h-64 object-contain rounded-xl mb-4 border border-slate-100" src="" alt="Soru">
+            
+            <!-- Yükleniyor Durumu -->
+            <div id="loadingState" class="hidden text-center py-6">
+                <div class="animate-spin text-indigo-600 text-4xl mb-3"><i class="fa-solid fa-circle-notch"></i></div>
+                <p class="text-sm font-bold text-slate-700">Öğretmeniniz soruyu inceliyor...</p>
+                <p class="text-xs text-slate-400 mt-1">Adım adım çözüm üretiliyor</p>
+            </div>
+
+            <!-- Çözüm Kutusu -->
+            <div id="solutionContainer" class="hidden w-full text-left mt-2 border-t border-slate-100 pt-4">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1">
+                    <i class="fa-solid fa-chalkboard-user text-indigo-600"></i> Öğretmenin Çözüm Adımları:
+                </h3>
+                <div id="solutionText" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-x-auto whitespace-pre-line font-medium"></div>
+            </div>
+        </div>
+
+        <!-- Gizli Kamera Tetikleyicileri -->
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+        <input type="file" id="galleryInput" accept="image/*" class="hidden">
+    </main>
+
+    <!-- Alt Butonlar -->
+    <footer class="w-full max-w-md bg-white border-t border-slate-100 p-6 flex gap-4 sticky bottom-0 z-50 shadow-lg">
+        <button id="btnGallery" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 px-4 rounded-2xl text-sm transition-colors">
+            <i class="fa-solid fa-images mr-1"></i> Galeriden Seç
+        </button>
+        <button id="btnCamera" class="flex-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl text-sm shadow-md shadow-indigo-200 transition-colors">
+            <i class="fa-solid fa-camera mr-1"></i> Fotoğraf Çek
+        </button>
+    </footer>
+
+    <!-- Akıllı Sistem Kodları -->
+    <script>
+        const btnCamera = document.getElementById('btnCamera');
+        const btnGallery = document.getElementById('btnGallery');
+        const cameraInput = document.getElementById('cameraInput');
+        const galleryInput = document.getElementById('galleryInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const placeholderText = document.getElementById('placeholderText');
+        const loadingState = document.getElementById('loadingState');
+        const solutionContainer = document.getElementById('solutionContainer');
+        const solutionText = document.getElementById('solutionText');
+
+        btnCamera.addEventListener('click', () => cameraInput.click());
+        btnGallery.addEventListener('click', () => galleryInput.click());
+
+        cameraInput.addEventListener('change', handleFile);
+        galleryInput.addEventListener('change', handleFile);
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imagePreview.src = event.target.result;
+                imagePreview.classList.remove('hidden');
+                placeholderText.classList.add('hidden');
+                solutionContainer.classList.add('hidden');
+                
+                // Resmi doğrudan ücretsiz yapay zekaya gönderiyoruz
+                solveWithFreeAI(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function solveWithFreeAI(fileBlob) {
+            loadingState.classList.remove('hidden');
+            try {
+                const prompt = "Sen lise öğrencilerine ders anlatan tecrübeli ve samimi bir öğretmenisin. Bu görseldeki soruyu öğrencine anlatır gibi adım adım ve çok net bir Türkçe ile çöz. Doğrudan cevabı verme, süreci öğret.";
+                
+                // API anahtarı istemeyen, tamamen ücretsiz Puter akıllı vision modeli
+                const response = await puter.ai.chat(prompt, fileBlob);
+                
+                solutionText.innerText = response.toString();
+                solutionContainer.classList.remove('hidden');
+            } catch (error) {
+                alert('Öğretmeniniz şu an yoğun, lütfen tekrar deneyin.');
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
